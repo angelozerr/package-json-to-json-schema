@@ -1,0 +1,3435 @@
+{
+  "name": "calva",
+  "displayName": "Calva: Clojure & ClojureScript Interactive Programming",
+  "description": "Integrated REPL, formatter, Paredit, and more. Powered by cider-nrepl and clojure-lsp.",
+  "icon": "assets/calva.png",
+  "version": "2.0.516",
+  "publisher": "betterthantomorrow",
+  "author": {
+    "name": "Better Than Tomorrow",
+    "email": "pez@pezius.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BetterThanTomorrow/calva.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BetterThanTomorrow/calva/issues"
+  },
+  "engines": {
+    "node": ">=16",
+    "vscode": "^1.75.0"
+  },
+  "sponsor": {
+    "url": "https://calva.io/sponsors/"
+  },
+  "categories": [
+    "Programming Languages",
+    "Testing",
+    "Formatters",
+    "Linters",
+    "Debuggers",
+    "Other"
+  ],
+  "keywords": [
+    "Clojure",
+    "ClojureScript",
+    "EDN",
+    "REPL",
+    "Interactive Programming",
+    "Structural Editing",
+    "CIDER"
+  ],
+  "galleryBanner": {
+    "color": "#EFEFEF",
+    "theme": "light"
+  },
+  "badges": [
+    {
+      "url": "https://img.shields.io/badge/chat-%23calva-db9550?style=for-the-badge&logo=zulip",
+      "href": "https://clojurians.zulipchat.com/#narrow/channel/151858-calva",
+      "description": "Let's talk in the #calva channel at the Clojurians Slack"
+    },
+    {
+      "url": "https://img.shields.io/badge/clojurians-calva--dev-blue.svg?logo=slack",
+      "href": "https://clojurians.slack.com/messages/calva/",
+      "description": "Let's talk in the #calva channel at the Clojurians Slack"
+    }
+  ],
+  "activationEvents": [
+    "workspaceContains:**/project.clj",
+    "workspaceContains:**/shadow-cljs.edn",
+    "workspaceContains:**/deps.edn",
+    "onDebugResolve:type"
+  ],
+  "main": "./out/extension",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "With Calva you might evaluate any code in the project."
+    }
+  },
+  "extensionPack": [
+    "betterthantomorrow.calva-spritz"
+  ],
+  "contributes": {
+    "debuggers": [
+      {
+        "type": "clojure",
+        "label": "Calva Debug",
+        "program": "./out/debugAdapter.js",
+        "runtime": "node"
+      }
+    ],
+    "languages": [
+      {
+        "id": "clojure",
+        "aliases": [
+          "Clojure",
+          "clojure"
+        ],
+        "extensions": [
+          ".clj",
+          ".cljs",
+          ".cljc",
+          ".cljd",
+          ".cljr",
+          ".cljx",
+          ".clojure",
+          ".edn",
+          ".joke",
+          ".boot",
+          ".bb",
+          ".ly",
+          ".lpy",
+          ".calva-repl",
+          ".fiddle"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "clojure",
+        "scopeName": "source.clojure",
+        "path": "./clojure.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "clojure",
+        "path": "./snippets.jsonc"
+      }
+    ],
+    "configurationDefaults": {
+      "[clojure]": {
+        "editor.wordSeparators": "\t ()\"':,;~@#$%^&{}[]`",
+        "editor.autoClosingBrackets": "always",
+        "editor.autoClosingOvertype": "always",
+        "editor.autoClosingQuotes": "always",
+        "editor.formatOnType": true,
+        "editor.autoIndent": "full",
+        "editor.formatOnPaste": true,
+        "editor.matchBrackets": "never",
+        "editor.guides.indentation": false,
+        "editor.parameterHints.enabled": false,
+        "editor.unicodeHighlight.allowedCharacters": {
+          " ": true,
+          "꞉": true
+        },
+        "editor.foldingStrategy": "indentation"
+      }
+    },
+    "semanticTokenScopes": [
+      {
+        "language": "clojure",
+        "scopes": {
+          "macro": [
+            "storage.control.clojure",
+            "keyword.control.clojure"
+          ]
+        }
+      }
+    ],
+    "configuration": [
+      {
+        "type": "object",
+        "title": "Calva",
+        "properties": {
+          "calva.useLegacyReplWindowPath": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "For legacy reasons, the REPL window used to be located in `${projectRootPath}/.calva/output-window/output.calva-repl`. The default directory will change to `${projectRootPath}/.calva/repl.calva-repl`. Disable this setting to start using the new path. And then add `**/.calva/repl.calva-repl` to your `.gitignore`."
+          },
+          "calva.legacyPrintBareReplWindowOutput": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Non-result output risks breaking the structure of the Clojure document. Therefore `stdout` from the REPL process is prepended with `;` to make the output into line comments, which is non-structural. Enable this setting to print bare output, without the line comment protection. **NB: The REPL window may stop working, or work very strangely or slowly.** Also note that the REPL Window is being deprecated as a destination for output, so you may anyway instead want to use the `calva.outputDestinations` settings to direct `stdout` and `stderr` to the _Calva Output_ `terminal` destination instead."
+          },
+          "calva.outputDestinations": {
+            "type": "object",
+            "markdownDescription": [
+              "Where different types of Calva output should be printed.\nCalva categorizes output into three types:\n- **evaluation results**: Clojure data returned from an evaluation.\n- **evaluation output**: stdout/stderr from an evaluation\n- **other output**: Other messages, logs, etc\n\nYou can select where each category of output should go to: the REPL Window, the _Calva Says_ Output Channel, or the _Calva output_ (pseudo) terminal."
+            ],
+            "properties": {
+              "evalResults": {
+                "type": "string",
+                "enum": [
+                  "repl-window",
+                  "output-channel",
+                  "terminal",
+                  "output-view"
+                ],
+                "default": "repl-window",
+                "markdownDescription": "Destination for evaluation results. (Clojure data returned from an evaluation)."
+              },
+              "evalOutput": {
+                "type": "string",
+                "enum": [
+                  "repl-window",
+                  "output-channel",
+                  "terminal",
+                  "output-view"
+                ],
+                "default": "repl-window",
+                "markdownDescription": "Destination for evaluation output (stdout/stderr from an evaluation)."
+              },
+              "otherOutput": {
+                "type": "string",
+                "enum": [
+                  "repl-window",
+                  "output-channel",
+                  "terminal",
+                  "output-view"
+                ],
+                "default": "repl-window",
+                "markdownDescription": "Destination for other output (Calva messages, out-of-band stdout/stderr, etcetera)."
+              }
+            },
+            "default": {
+              "evalResults": "repl-window",
+              "evalOutput": "repl-window",
+              "otherOutput": "repl-window"
+            }
+          },
+          "calva.fiddleFilePaths": {
+            "type": "array",
+            "markdownDescription": "An array of `source` and `fiddle` root paths, relative to the project root. This is used by the commands **Calva: Open Fiddle File for Current File**, and **Calva: Evaluate Fiddle File for Current File**. Example:\n\n```json\n\"calva.fiddleFilePaths\": [\n  {\n    \"source\": [\"src\"],\n    \"fiddle\": [\"env\", \"dev\", \"fiddles\"]\n  }\n]\n```\n\nThe default is `null`, which will make Calva associate files with a `.fiddle` file extension as the fiddle file for a Clojure file. E.g. a file `src/foo/bar/baz_main.cljc`, will have an associated fiddle file named `src/foo/bar/baz_main.fiddle`. See [calva.io/fiddle](https://calva.io/fiddle-files/) for more info.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "markDownDescription": "The source files root path. An array of strings, used as path segments. E.g. `[\"src\"]`",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "fiddle": {
+                  "markDownDescription": "The fiddle files root path. An array of strings, used as path segments. E.g. `[\"env\", \"dev\", \"fiddles\"]`",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "source",
+                "fiddle"
+              ]
+            },
+            "default": null
+          },
+          "calva.useLiveShare": {
+            "type": "boolean",
+            "markdownDescription": "Enable support for LiveShare. Currently defaults to false, because of [ive-share/issues/4551](https://github.com/MicrosoftDocs/live-share/issues/4551). This issue makes Calva fail to connect to a REPL for some users.",
+            "default": false
+          },
+          "calva.useTestExplorer": {
+            "type": "boolean",
+            "description": "Enable experimental support for the VSCode Test Explorer",
+            "default": false
+          },
+          "calva.enableClojureLspOnStart": {
+            "markdownDescription": "Determines if clojure-lsp should start automatically, and what triggers it. See [calva.io/clojure-lsp](https://calva.io/clojure-lsp/) for info about how using clojure-lsp with Calva.",
+            "type": "string",
+            "enum": [
+              "when-workspace-opened-use-workspace-root",
+              "when-file-opened-use-furthest-project",
+              "always-use-first-workspace-root",
+              "never"
+            ],
+            "enumDescriptions": [
+              "Start clojure-lsp automatically when a workspace containing a Clojure project is opened. The server will be started with its project root set to the workspace root. Best option for many single-Clojure-project workspaces and Polylith-like projects. It is recommended to configure your project so that you can use this option and have only one clojure-lsp server running.",
+              "Start clojure-lsp automatically when a Clojure file is opened. The server will be started with its project root set to the project found furthest from the opened file. Use this option if your monorepo has several Clojure projects, but lacks a governing project file at the workspace root.",
+              "Start clojure-lsp automatically in the first workspace root. Use this option to avoid starting multiple lsp servers when multiple independent clojure projects are added as workspace folders",
+              "Don't start clojure-lsp automatically. You can always start clojure-lsp at will via the command palette or from the statusbar. Good option in multi-project workspaces where you want to start a clojure-lsp for a particular project. Also useful if you are running on a machine with limited resources, like a Raspberry Pi."
+            ],
+            "default": "always-use-first-workspace-root"
+          },
+          "calva.prettyPrintingOptions": {
+            "type": "object",
+            "description": "Settings for Calva's pretty printing",
+            "properties": {
+              "enabled": {
+                "type": "boolean",
+                "description": "Should evaluations be pretty printed?"
+              },
+              "printEngine": {
+                "type": "string",
+                "description": "The print engine to use. 'calva' means that the nREPL server will first plain print it and then Calva will prettify. The other options will make the server use the chosen printer-function to print the result, and Calva will not reformat it. To use some other function (on the server), configure `printFn` instead. To use the `nREPL` default (the equivalent of `clojure.core/pr`), set neither this nore `printFn`.",
+                "enum": [
+                  "calva",
+                  "pprint",
+                  "fipp",
+                  "puget",
+                  "zprint"
+                ]
+              },
+              "printFn": {
+                "type": "object",
+                "markdownDescription": "A custom `nREPL` compatible `print-fn`. See https://nrepl.org/nrepl/usage/misc.html#pretty-printing",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "markdownDescription": "A symbol referencing a Clojure function to use for printing result values. E.g. `pr`. Or `foo.bar/baz`."
+                  },
+                  "maxWidthArgument": {
+                    "type": "string",
+                    "markdownDescription": "Argument that the function uses for setting the max-width of the lines printed. E.g. `width`."
+                  },
+                  "seqLimitArgument": {
+                    "type": "string",
+                    "markdownDescription": "Argument that the function uses for truncating the number of elements to print  for sequences. E.g. `length`."
+                  },
+                  "maxDepthArgument": {
+                    "type": "string",
+                    "markdownDescription": "Argument that the function uses for limiting the depth that collections are traversed. E.g. `levels`."
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "width": {
+                "type": "number",
+                "description": "The width of the printing. Or line length... Hmmm, you get it, I hope."
+              },
+              "maxLength": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "The maximum number of forms to print of each collection. For no limit, do not include this in your setting. See https://clojuredocs.org/clojure.core/*print-length*"
+              },
+              "maxDepth": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "description": "The maximum number of levels deep the printing will go in nested objects. For no limit, do not include this in your setting. Does not exist for `puget`. See also https://clojuredocs.org/clojure.core/*print-level*"
+              }
+            },
+            "required": [
+              "enabled"
+            ],
+            "default": {
+              "printEngine": "pprint",
+              "enabled": true,
+              "width": 120,
+              "maxLength": 50
+            }
+          },
+          "clojure.trace.server": {
+            "type": "string",
+            "default": "off",
+            "enum": [
+              "off",
+              "messages",
+              "verbose"
+            ],
+            "description": "Trace communication between Calva and the Clojure language server, clojure-lsp. Trace messages are displayed in the Clojure Language Client output channel."
+          },
+          "calva.referencesCodeLens.enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable/disable references CodeLens in Clojure(Script) files. "
+          },
+          "clojure.format.enable": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable/disable calva-fmt as Clojure formatter"
+          },
+          "calva.evalOnSave": {
+            "type": "boolean",
+            "default": false,
+            "description": "Run load-file when opening a new file and on file save"
+          },
+          "calva.evaluationSendCodeToOutputWindow": {
+            "type": "boolean",
+            "default": false,
+            "description": "Also send evaluated code to the REPL Window"
+          },
+          "calva.testOnSave": {
+            "type": "boolean",
+            "default": false,
+            "description": "Run namespace tests on file save"
+          },
+          "calva.showDocstringInParameterHelp": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show the docstring in the parameter hints"
+          },
+          "calva.statusColor": {
+            "type": "object",
+            "description": "Configuration for custom coloring of the statusbar.",
+            "properties": {
+              "light": {
+                "type": "object",
+                "description": "Light theme colors",
+                "properties": {
+                  "disconnectedColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the disconnected status"
+                  },
+                  "launchingColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the launching status"
+                  },
+                  "connectedStatusColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the connected status"
+                  },
+                  "typeStatusColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the type status"
+                  }
+                }
+              },
+              "dark": {
+                "type": "object",
+                "description": "Dark theme colors",
+                "properties": {
+                  "disconnectedColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the disconnected status"
+                  },
+                  "launchingColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the launching status"
+                  },
+                  "connectedStatusColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the connected status"
+                  },
+                  "typeStatusColor": {
+                    "type": "string",
+                    "pattern": "#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})",
+                    "description": "Foreground color for the type status"
+                  }
+                }
+              }
+            },
+            "default": {
+              "light": {
+                "disconnectedColor": "#777777",
+                "launchingColor": "#000000",
+                "connectedStatusColor": "#DB9550",
+                "typeStatusColor": "#91dc47"
+              },
+              "dark": {
+                "disconnectedColor": "#aaaaaa",
+                "launchingColor": "#ffffff",
+                "connectedStatusColor": "#DB9550",
+                "typeStatusColor": "#91dc47"
+              }
+            }
+          },
+          "calva.jackInEnv": {
+            "type": "object",
+            "default": {},
+            "description": "Specifies any environment variables your project needs. (Probably mostly for your Workspace Settings.)"
+          },
+          "calva.autoSelectNReplPortFromPortFile": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "If true, Calva will auto-select a REPL connection from the nRepl port file, suppressing the `host:port` prompt if the file exists."
+          },
+          "calva.autoConnectRepl": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "If true, Calva will auto-connect the REPL when a project is opened and there exists an nRepl port file."
+          },
+          "calva.autoStartRepl": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "If true, Calva will auto-start and connect the REPL (a.k.a. Jack-in) when a Clojure project is opened. **NB:** To fully automate the jack-in process, you need to configure `calva.replConnectSequences` such that one sequence is marked with `autoSelectForJackIn`, has `projectRootPath` set, and has `menuSelections` configured."
+          },
+          "calva.jackInDependencyVersions": {
+            "type": "object",
+            "description": "Versions of the dependencies injected by Calva Jack-in",
+            "properties": {
+              "nrepl": {
+                "type": "string",
+                "description": "nREPL is the wonderful piece of software that gives Calva a structured and extensible connection to the REPL in your Clojure and ClojureScript projects."
+              },
+              "cider-nrepl": {
+                "type": "string",
+                "description": "cider-nrepl is middleware that extends the nREPL connection with all sorts of nice stuff that Calva uses to give you a delightful IDE experience."
+              },
+              "cider/piggieback": {
+                "type": "string",
+                "description": "Piggieback is used to create nREPL sessions in ClojureScript projects (not with shadow-cljs though, which provides its own middleware for this."
+              }
+            },
+            "default": {
+              "nrepl": "1.3.1",
+              "cider-nrepl": "0.55.4",
+              "cider/piggieback": "0.6.0"
+            }
+          },
+          "calva.clojureLspVersion": {
+            "type": "string",
+            "default": "latest",
+            "markdownDescription": "The version of `clojure-lsp` to download and use. This should be a release tag-name, or `latest` (default), or `nightly`. Will take effect after a restart of clojure-lsp. See [calva.io/clojure-lsp](https://calva.io/clojure-lsp) for information about how to manage the clojure-lsp process. NB: _This setting will be ignored if `calva.clojureLspPath` is set to something non-blank._",
+            "pattern": "^(latest|nightly|\\d{4}\\.\\d{2}\\.\\d{2}-\\d{2}\\.\\d{2}\\.\\d{2})$"
+          },
+          "calva.clojureLspPath": {
+            "type": "string",
+            "default": "",
+            "markdownDescription": "The absolute path to the `clojure-lsp` native binary you want Calva to use. When non-blank the `calva.clojureLspVersion` setting will be ignored, and the binary at the path set will be used instead. Will take effect after a restart of clojure-lsp. See [calva.io/clojure-lsp](https://calva.io/clojure-lsp) for information about how to manage the clojure-lsp process."
+          },
+          "calva.openBrowserWhenFigwheelStarted": {
+            "type": "boolean",
+            "default": true,
+            "description": "(lein-figwheel only) Should Calva open the Figwheel app for you when Figwheel has been started?"
+          },
+          "calva.customREPLCommandSnippets": {
+            "type": "array",
+            "default": [],
+            "markdownDescription": "Configuration for the command **Run Custom REPL Command**",
+            "$schema": "http://json-schema.org/draft-06/schema#",
+            "items": {
+              "title": "replCommand",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "markDownDescription": "The name of the command will show in the **Run Custom REPL Command** quick-pick menu."
+                },
+                "key": {
+                  "type": "string",
+                  "markdownDescription": "The key can be used to reference the snippet from **Run Custom REPL Command** keyboard shortcut arguments. This key will also be used in the quick-pick menu."
+                },
+                "snippet": {
+                  "type": [
+                    "string",
+                    "array"
+                  ],
+                  "markDownDescription": "Command to send to the REPL"
+                },
+                "ns": {
+                  "type": "string",
+                  "markDownDescription": "(optional) Namespace to evaluate the command in. If omitted the command will be executed in the namespace of the current file."
+                },
+                "repl": {
+                  "type": "string",
+                  "markDownDescription": "Choose which REPL should the code should be evaluated in. If omitted, the same REPL as for the current file will be used.",
+                  "enum": [
+                    "clj",
+                    "cljs"
+                  ]
+                },
+                "evaluationSendCodeToOutputWindow": {
+                  "type": "boolean",
+                  "markDownDescription": "Should the code snippet evaluated be echoed to the REPL Window?"
+                }
+              },
+              "required": [
+                "name",
+                "snippet"
+              ],
+              "default": {
+                "name": "",
+                "snippet": "",
+                "evaluationSendCodeToOutputWindow": true
+              }
+            }
+          },
+          "calva.customREPLHoverSnippets": {
+            "type": "array",
+            "default": [],
+            "description": "Configuration for snippets that get called on hover",
+            "$schema": "http://json-schema.org/draft-06/schema#",
+            "items": {
+              "title": "replHover",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "markDownDescription": "The name of the snippet will show inside the hover text."
+                },
+                "snippet": {
+                  "type": [
+                    "string",
+                    "array"
+                  ],
+                  "description": "Snippet to send to the REPL"
+                },
+                "ns": {
+                  "type": "string",
+                  "description": "(optional) Namespace to evaluate the snippet in. If omitted the snippet will be executed in the namespace of the current file."
+                },
+                "repl": {
+                  "type": "string",
+                  "description": "Choose which REPL should the code should be evaluated in. If omitted, the same REPL as for the current file will be used.",
+                  "enum": [
+                    "clj",
+                    "cljs"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "snippet"
+              ]
+            }
+          },
+          "calva.myLeinProfiles": {
+            "type": "array",
+            "description": "At Jack in, any profiles listed here will be added to the profiles found in the `project.clj` file.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "calva.myCljAliases": {
+            "type": "array",
+            "description": "At Jack in, any aliases listed here will be added to the aliases found in the project's `deps.edn` file.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "calva.replConnectSequences": {
+            "type": "array",
+            "description": "For when your project needs a custom REPL connect sequence.",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "projectType"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "markdownDescription": "This will show up in the Jack-in quick-pick menu when you start Jack-in if you have more than one sequence configured."
+                },
+                "projectType": {
+                  "type": "string",
+                  "markdownDescription": "Select one of the project types supported by Calva.",
+                  "enum": [
+                    "Leiningen",
+                    "deps.edn",
+                    "shadow-cljs",
+                    "lein-shadow",
+                    "generic",
+                    "custom"
+                  ]
+                },
+                "autoSelectForJackIn": {
+                  "type": "boolean",
+                  "markdownDescription": "If true, this sequence will be automatically selected at **Jack-in**, suppressing the Project Type. Use together with `projectRootPath` to also suppress the Project Root menu. Add usage of `menuSelections` to go for a prompt-less REPL Jack-in. If you have more than one sequence with `autoSelectForJackIn` set to true, Calva will use the sequence with its `projectRootPath` closest to the currently active editor file. And if there is no such closest file, the first sequence will be used."
+                },
+                "autoSelectForConnect": {
+                  "type": "boolean",
+                  "markdownDescription": "If true, this sequence will be automatically selected at **Connect**, suppressing the Project Type menu. Use together with `projectRootPath` to also suppress the Project Root menu. If you have more than one sequence with `autoSelectForConnect` set to true, Calva will use the sequence with its `projectRootPath` closest to the currently active editor file. And if there is no such closest file, the first sequence will be used."
+                },
+                "projectRootPath": {
+                  "type": "array",
+                  "markdownDescription": "An array of path segments leading to the root of the project to which this connect sequence corresponds. Use together with `autoSelectForJackIn`/`autoSelectForConnect` to suppress the Project Root menu. The path can be absolute or relative to the workspace root. If there are several Workspace Folders, the workspace root is the path of the first folder, so relative paths will only work for this first folder. If you can't be bothered splitting up the path in segments, put the whole path in the first segment, though please note that if you use Windows path separators, these will not work for users with Linux or macOS.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "nReplPortFile": {
+                  "type": "array",
+                  "description": "An array of path segments for the relative path from the project root to the nREPL port file for this connect sequence. E.g. For shadow-cljs this would be [\".shadow-cljs\", \"nrepl.port\"]",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "customJackInCommandLine": {
+                  "type": "string",
+                  "markdownDescription": "A custom command line, completely up to you.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "afterCLJReplJackInCode": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ],
+                  "markdownDescription": "Code to evaluate in the CLJ REPL once it has been created. You can use either a string or an array of strings. If you use an array, the strings will be joined with a newline character to form the resulting code.",
+                  "required": false
+                },
+                "menuSelections": {
+                  "type": "object",
+                  "description": "Pre-selected menu options. If a selection is made here. Calva won't prompt for it.",
+                  "properties": {
+                    "leinProfiles": {
+                      "type": "array",
+                      "description": "At Jack-in to a Leiningen project, use these profiles to launch the repl.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "leinAlias": {
+                      "description": "At Jack-in to a Leiningen project, launch with this alias. Set to null to launch with Calva's default task (a headless repl).",
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cljAliases": {
+                      "type": "array",
+                      "description": "At Jack-in to a deps.edn project, use these aliases to launch the repl.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "cljsLaunchBuilds": {
+                      "type": "array",
+                      "description": "The cljs builds to start/watch at Jack-in/connect.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "cljsDefaultBuild": {
+                      "type": "string",
+                      "description": "Which cljs build to attach to at the initial connect."
+                    }
+                  }
+                },
+                "cljsType": {
+                  "description": "Either a built in type, or an object configuring a custom type. If omitted Calva will show a menu with the built-in types.",
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "Figwheel Main",
+                        "lein-figwheel",
+                        "shadow-cljs",
+                        "ClojureScript built-in for browser",
+                        "ClojureScript built-in for node",
+                        "none"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "connectCode",
+                        "dependsOn"
+                      ],
+                      "properties": {
+                        "dependsOn": {
+                          "type": "string",
+                          "enum": [
+                            "Figwheel Main",
+                            "lein-figwheel",
+                            "shadow-cljs",
+                            "ClojureScript built-in for browser",
+                            "ClojureScript built-in for node",
+                            "User provided"
+                          ],
+                          "description": "The ClojureScript REPL dependencies this customization needs. NB: If it is `User provided`, then you need to provide the dependencies in the project, or launch with an alias (deps.edn), profile (Leiningen), or build (shadow-cljs) that provides the dependencies needed."
+                        },
+                        "buildsRequired": {
+                          "type": "boolean",
+                          "description": "If the repl type requires that builds are started in order to connect to them, set this to true."
+                        },
+                        "isStarted": {
+                          "type": "boolean",
+                          "description": "For cljs repls that Calva does not need to start, set this to true. (If you base your custom cljs repl on shadow-cljs workflow, for instance.)"
+                        },
+                        "startCode": {
+                          "type": "string",
+                          "description": "Clojure code to be evaluated to create and/or start your custom CLJS REPL."
+                        },
+                        "isReadyToStartRegExp": {
+                          "type": "string",
+                          "description": "A regular expression which, when matched in the stdout from the startCode evaluation, will make Calva continue with connecting the REPL, and to prompt the user to start the application. If omitted and there is startCode Calva will continue when that code is evaluated."
+                        },
+                        "openUrlRegExp": {
+                          "type": "string",
+                          "description": "A regular expression, matched against the stdout of cljsType evaluations, for extracting the URL with which the app can be started. The expression should have a capturing group named 'url'. E.g. \\”Open URL: (?<url>\\S+)\\”",
+                          "default": "Open(ing)? URL (?<url>\\S+)"
+                        },
+                        "shouldOpenUrl": {
+                          "type": "boolean",
+                          "description": "Choose if Calva should automatically open the URL for you or not."
+                        },
+                        "connectCode": {
+                          "type": "string",
+                          "description": "Clojure code to be evaluated to convert the REPL to a CLJS REPL that Calva can use to connect to the application."
+                        },
+                        "isConnectedRegExp": {
+                          "type": "string",
+                          "description": "A regular expression which, when matched in the stdout of the connectCode evaluation, will tell Calva that the application is connected.",
+                          "default": "To quit, type: :cljs/quit"
+                        },
+                        "printThisLineRegExp": {
+                          "type": "string",
+                          "description": "A regular expression which, when matched in the stdout from any code evaluations in the cljsType, will make the matched text be printed to wherever Calva prints output."
+                        }
+                      }
+                    }
+                  ]
+                },
+                "jackInEnv": {
+                  "type": "object",
+                  "default": {},
+                  "markdownDescription": "Environment variables that will be merged with any global `calva.jackInEnv` and then applied to the Jack-in process. The merge is very similar to how Clojure's `merge` works. So for any common keys between the global setting and this one, the ones from this setting will win."
+                }
+              }
+            }
+          },
+          "calva.projectRootsSearchExclude": {
+            "type": "array",
+            "markdownDescription": "Exclude these directories when searching for projects in the workspace during Jack-in/Connect. Each entry is a partial *glob* and will be part of a resulting *glob* of the form `**/{glob1,glob2,...,globN}`. This means that all directories in the workspace matching an entry will be excluded.",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "bower_components",
+              ".bzr",
+              ".cache",
+              ".ccls-cache",
+              ".clangd",
+              ".classpath",
+              "*.code-search",
+              ".cpcache",
+              "_darcs",
+              ".DS_Store",
+              ".ensime_cache",
+              ".eunit",
+              "flow-typed",
+              "_FOSSIL_",
+              ".fslckout",
+              ".git",
+              ".hg",
+              ".idea",
+              ".joyride",
+              "node_modules",
+              ".pijul",
+              ".project",
+              ".shadow-cljs",
+              ".stack-work",
+              ".svn",
+              "target",
+              ".tox",
+              ".vscode"
+            ]
+          },
+          "calva.enableJSCompletions": {
+            "type": "boolean",
+            "description": "Should Calva use suitable and bring you JavaScript completions? This is an experimental cider-nrepl feature. Disable if completions start to throw errors.",
+            "default": true
+          },
+          "calva.autoOpenREPLWindow": {
+            "type": "boolean",
+            "markdownDescription": "Automatically open the REPL window on Jack-in or Connect.",
+            "default": false
+          },
+          "calva.autoOpenJackInTerminal": {
+            "type": "boolean",
+            "markdownDescription": "Automatically open the the Jack-in Terminal on Jack-in.",
+            "default": false
+          },
+          "calva.autoOpenResultOutputDestination": {
+            "type": "boolean",
+            "markdownDescription": "Automatically open the the result output destination on Jack-in or Connect.",
+            "default": true
+          },
+          "calva.autoOpenInspector": {
+            "type": "boolean",
+            "markdownDescription": "Automatically open/reveal the Calva Inspector on Jack-in or Connect.",
+            "default": true
+          },
+          "calva.enableInspectorRainbow": {
+            "type": "boolean",
+            "markdownDescription": "Should the Calva Inspector items use rainbow colors? When enabled, the collection items will be colored with the same colors as VS Code uses for bracket pairs. See https://calva.io/inspector for info.",
+            "default": false
+          },
+          "calva.keybindingsEnabled": {
+            "type": "boolean",
+            "description": "Activate keybindings.",
+            "default": true,
+            "scope": "window"
+          },
+          "calva.showCalvaSaysOnStart": {
+            "type": "boolean",
+            "markdownDescription": "Show the Calva Says output panel on start?",
+            "default": false
+          },
+          "calva.definitionProviderPriority": {
+            "markdownDescription": "Calva can provide definitions using both the REPL connection and via clojure-lsp. Which provider should Calva prioritize when both are available?",
+            "enum": [
+              [
+                "repl",
+                "lsp"
+              ],
+              [
+                "lsp",
+                "repl"
+              ]
+            ],
+            "markdownEnumDescriptions": [
+              "Use dynamic (REPL) definitions when available.",
+              "Use static (clojure-lsp) definitions when available."
+            ],
+            "default": [
+              "repl",
+              "lsp"
+            ]
+          },
+          "calva.depsEdnJackInExecutable": {
+            "markdownDescription": "Which executable should Calva Jack-in use for starting a deps.edn project? The default is to let Calva choose. It will choose `clojure` if that is installed and working. Otherwise `deps.clj`, which is bundled with Calva, will be used. (This settings has no effect on Windows, where `deps.clj` will always be used.)",
+            "enum": [
+              "clojure",
+              "deps.clj",
+              "clojure or deps.clj"
+            ],
+            "markdownEnumDescriptions": [
+              "Always use `clojure`",
+              "Always use `deps.clj`",
+              "Prefer `clojure`, but use `deps.clj` if `clojure` doesn't seem to work"
+            ],
+            "default": "clojure or deps.clj",
+            "type": "string"
+          },
+          "calva.html2HiccupOptions": {
+            "type": "object",
+            "markdownDescription": "Options for the `html2hiccup` command. See [calva.io/hiccup](https://calva.io/hiccup/)",
+            "properties": {
+              "mapify-style?": {
+                "type": "boolean",
+                "markdownDescription": "Should the `style` attribute be converted to a map?",
+                "default": false
+              },
+              "kebab-attrs?": {
+                "type": "boolean",
+                "markdownDescription": "Should the attribute names be converted to a kebab-case?",
+                "default": false
+              },
+              "add-classes-to-tag-keyword?": {
+                "type": "boolean",
+                "markdownDescription": "Should all class names be added as CSS-like shortcuts to tag keyword?",
+                "default": true
+              }
+            },
+            "default": {
+              "mapify-style?": false,
+              "kebab-attrs?": false,
+              "add-classes-to-tag-keyword?": true
+            }
+          },
+          "calva.autoEvaluateCode": {
+            "type": "object",
+            "markdownDescription": "Code to automatically evaluate when a REPL has been connected, or a file/namespace has been loaded/evaluated. See https://calva.io/customizing-jack-in-and-connect/ for details.",
+            "properties": {
+              "onConnect": {
+                "type": "object",
+                "markdownDescription": "When a REPL has been connected.",
+                "properties": {
+                  "clj": {
+                    "type": "string",
+                    "markdownDescription": "Code to evaluate when the **Clojure** REPL has been connected. The default is code that refer in the `repl-requires`/REPL utilities (like `source`, `doc`, etcetera). (Note that there is also a command to do this on demand.). The code will be evaluated *before* the `afterCLJReplJackInCode` in any [connect sequence](https://calva.io/connect-sequences/) used. Set to `null` to disable this feature."
+                  },
+                  "cljs": {
+                    "type": "string",
+                    "markdownDescription": "Code to evaluate when the **ClojureScript** REPL has been connected. The default is code that refer in the `repl-requires`/REPL utilities (like `source`, `doc`, etcetera). (Note that there is also a command to do this on demand.). Set to `null` to disable this feature."
+                  }
+                }
+              },
+              "onFileLoaded": {
+                "type": "object",
+                "markdownDescription": "When a file/namespace has been loaded/evaluated.",
+                "properties": {
+                  "clj": {
+                    "type": "string",
+                    "markdownDescription": "Code to evaluate when the current file/namespace has been loaded/evaluated (via the command for this), in the **Clojure** REPL. The same substitution variables as with [custom commands](https://calva.io/custom-commands/) can be used here."
+                  },
+                  "cljs": {
+                    "type": "string",
+                    "markdownDescription": "Code to evaluate when the current file/namespace has been loaded/evaluated (via the command for this), in the **ClojureScript** REPL. The same substitution variables as with [custom commands](https://calva.io/custom-commands/) can be used here."
+                  }
+                }
+              }
+            },
+            "default": {
+              "onConnect": {
+                "clj": "(when-let [requires (resolve 'clojure.main/repl-requires)] (clojure.core/apply clojure.core/require @requires))",
+                "cljs": "(require '[cljs.repl :refer [apropos dir doc find-doc print-doc pst source]])"
+              },
+              "onFileLoaded": {
+                "clj": null,
+                "cljs": null
+              }
+            }
+          },
+          "calva.redirectServerOutputToRepl": {
+            "type": "boolean",
+            "markdownDescription": "Redirect the output from the REPL server process to the Output Destination. With this disabled, output from child threads of evaluations will not be shown in the output destination, but instead in the terminal where the REPL is started (the jack-in terminal if Calva started the REPL).",
+            "default": true
+          },
+          "calva.basilispPath": {
+            "type": "string",
+            "default": "basilisp",
+            "markdownDescription": "The path to the `basilisp` executable. If Basilisp is installed in a virtual environment, update this to the full path of the `basilisp` executable within that virtual environment."
+          }
+        }
+      },
+      {
+        "title": "Paredit",
+        "type": "object",
+        "properties": {
+          "calva.paredit.defaultKeyMap": {
+            "type": "string",
+            "description": "The default keymap to use for bindings when there is no custom binding.",
+            "default": "strict",
+            "enum": [
+              "original",
+              "strict",
+              "none"
+            ],
+            "scope": "window"
+          },
+          "calva.paredit.hijackVSCodeDefaults": {
+            "type": "boolean",
+            "markdownDescription": "When enabled, more VS Code built-in shortcuts are overridden with their ”corresponding” Paredit commands.",
+            "default": true,
+            "scope": "window"
+          },
+          "calva.paredit.killAlsoCutsToClipboard": {
+            "type": "boolean",
+            "markdownDescription": "When enabled, replaces the clipboard content with the deleted code.",
+            "default": false,
+            "scope": "window"
+          },
+          "calva.paredit.multicursor": {
+            "type": "boolean",
+            "markdownDescription": "Experimental: Support for multiple cursors in paredit commands.\nCurrently supported commands:\n- Cursor movement\n- Cursor selection\n- Rewrap",
+            "default": false,
+            "scope": "window"
+          }
+        }
+      },
+      {
+        "title": "Calva-fmt",
+        "type": "object",
+        "properties": {
+          "calva.fmt.configPath": {
+            "type": "string",
+            "markdownDescription": "Path to [cljfmt](https://github.com/weavejester/cljfmt#configuration) configuration file. Absolute or relative to the project root directory. To provide the config via [clojure-lsp](https://clojure-lsp.io), set this to `CLOJURE-LSP` (case sensitive). If left blank and a config file with a [default name](https://github.com/weavejester/cljfmt#configuration) is used, the file will be automatically loaded."
+          },
+          "calva.fmt.newIndentEngine": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Use the structural editor for indentation (instead of `cljfmt`)."
+          },
+          "calva.fmt.keepCommentTrailParenOnOwnLine": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Treat `(comment...)` forms special and keep its closing paren on a line of its own."
+          }
+        }
+      },
+      {
+        "type": "object",
+        "title": "Calva Highlight",
+        "properties": {
+          "calva.highlight.enableBracketColors": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable rainbow brackets",
+            "scope": "resource"
+          },
+          "calva.highlight.rainbowIndentGuides": {
+            "type": "boolean",
+            "default": false,
+            "markdownDescription": "Use rainbow indent guides. (To use built-in indent guides, disable this and enable built-in guides in `[\"clojure\"]` scope.",
+            "scope": "resource"
+          },
+          "calva.highlight.highlightActiveIndent": {
+            "type": "boolean",
+            "default": true,
+            "description": "Highlight active indent with a guideline. (Unlike the VS Code built-in setting, this works independently of the rainbowIndentGuides setting.)",
+            "scope": "resource"
+          },
+          "calva.highlight.bracketColors": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "markdownDescription": "CSS color, e.g. `\"#ccc\"`, or `\"#91dc47\"`"
+                },
+                {
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "markdownDescription": "Tuple of CSS colors, `[light, dark]`, e.g. `[\"#ccc\", \"#000\"]`"
+                }
+              ]
+            },
+            "default": [
+              [
+                "#000",
+                "#ccc"
+              ],
+              "#0098e6",
+              "#e16d6d",
+              "#3fa455",
+              "#c968e6",
+              "#999",
+              "#ce7e00"
+            ],
+            "markdownDescription": "An array where each element can be either a CSS color string, or a tuple of two CSS color strings. Use tuples when you want a different color for light and dark themes, `[light, dark]`, e.g. `[\"#ccc\", \"#000\"]`",
+            "scope": "resource"
+          },
+          "calva.highlight.cycleBracketColors": {
+            "type": "boolean",
+            "default": true,
+            "description": "If nesting level is greater than amount of colors, start counting over",
+            "scope": "resource"
+          },
+          "calva.highlight.misplacedBracketStyle": {
+            "type": "object",
+            "default": null,
+            "description": "Style of misplaced bracket",
+            "scope": "resource"
+          },
+          "calva.highlight.matchedBracketStyle": {
+            "type": "object",
+            "default": null,
+            "description": "Style of pair bracket highlight",
+            "scope": "resource"
+          },
+          "calva.highlight.commentFormStyle": {
+            "type": "object",
+            "default": null,
+            "description": "Style of `(comment)` forms",
+            "scope": "resource"
+          },
+          "calva.highlight.ignoredFormStyle": {
+            "type": "object",
+            "default": null,
+            "description": "Style of `#_` ignored forms",
+            "scope": "resource"
+          },
+          "calva.highlight.ignoredTopLevelFormStyle": {
+            "type": "object",
+            "default": null,
+            "markdownDescription": "Style of top level `#_` ignored forms. If not specified, it will be the same as what's set for `calva.highlight.ignoredFormStyle`",
+            "scope": "resource"
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "calva.activateCalva",
+        "title": "Activate the Calva Extension",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.startJoyrideReplAndConnect",
+        "title": "Start Joyride REPL and Connect",
+        "enablement": "!joyride.isNReplServerRunning",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.clojureLsp.showClojureLspMenu",
+        "title": "Show clojure-lsp menu",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.convertJs2Cljs",
+        "title": "Convert JavaScript code to ClojureScript",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.convertDart2Clj",
+        "title": "Convert Dart code to Clojure/ClojureDart",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.convertHtml2Hiccup",
+        "title": "Convert HTML code to Hiccup",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.pasteHtmlAsHiccup",
+        "title": "Paste HTML code as Hiccup",
+        "category": "Calva",
+        "icon": "$(paste)"
+      },
+      {
+        "command": "calva.copyHtmlAsHiccup",
+        "title": "Copy HTML code as Hiccup",
+        "category": "Calva",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "calva.prettyPrintReplaceCurrentForm",
+        "title": "Replace Current Form (or Selection) with Pretty Printed Form",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.openUserConfigEdn",
+        "title": "Open REPL snippets User config.edn",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.rereadUserConfigEdn",
+        "title": "Refresh REPL snippets from User config.edn",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.clojureLsp.download",
+        "title": "Download the configured Clojure LSP Server version",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.clojureLsp.start",
+        "title": "Start the Clojure LSP Server",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.clojureLsp.stop",
+        "title": "Stop the Clojure LSP Server",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.clojureLsp.restart",
+        "title": "Restart the Clojure LSP Server",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.clojureLsp.manage",
+        "title": "Manage Clojure LSP Servers",
+        "category": "Calva Clojure LSP"
+      },
+      {
+        "command": "calva.diagnostics.openClojureLspLogFile",
+        "title": "Open Clojure LSP Log File",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "command": "calva.diagnostics.showLspTraceLevelSettings",
+        "title": "Show LSP Trace Level Settings",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "command": "calva.diagnostics.toggleNreplLoggingEnabled",
+        "title": "Toggle nREPL Logging Enabled",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "command": "calva.diagnostics.printTextNotationFromDocument",
+        "title": "Print TextNotation from the current document to Calva says",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "command": "calva.diagnostics.createDocumentFromTextNotation",
+        "title": "Create a new Clojure Document from TextNotation",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "command": "calva.linting.resolveMacroAs",
+        "title": "Resolve Macro As",
+        "category": "Calva Linting",
+        "enablement": "editorLangId == clojure && workspaceFolderCount > 0"
+      },
+      {
+        "command": "calva.copyJackInCommandToClipboard",
+        "title": "Copy Jack-In Command Line to Clipboard",
+        "category": "Calva",
+        "enablement": "workspaceFolderCount > 0"
+      },
+      {
+        "command": "calva.openCalvaDocs",
+        "title": "Open Documentation (calva.io)",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.debug.instrument",
+        "title": "Instrument Top Level Form for Debugging",
+        "category": "Calva Debug",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva.togglePrettyPrint",
+        "title": "Toggle Pretty Printing for All Evaluations",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.toggleEvaluationSendCodeToOutputWindow",
+        "title": "Toggle also sending evaluated code to the REPL Window",
+        "category": "Calva",
+        "enablement": "calva:connected"
+      },
+      {
+        "command": "calva.jackIn",
+        "title": "Start a Project REPL and Connect (aka Jack-In)",
+        "category": "Calva",
+        "enablement": "workspaceFolderCount > 0"
+      },
+      {
+        "command": "calva.jackOut",
+        "title": "Stop/Kill the Project REPL started by Calva (aka Jack-Out)",
+        "category": "Calva",
+        "enablement": "calva:jackedIn"
+      },
+      {
+        "command": "calva.connect",
+        "title": "Connect to a Running REPL Server in the Project",
+        "category": "Calva",
+        "enablement": "workspaceFolderCount > 0"
+      },
+      {
+        "command": "calva.connectNonProjectREPL",
+        "title": "Connect to a Running REPL Server, not in Project",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.disconnect",
+        "title": "Disconnect from the REPL Server",
+        "enablement": "calva:connected || calva:connecting || calva:launching",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.showReplMenu",
+        "title": "Open the REPL Menu (Start/Connect a REPL, etc.)",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.startStandaloneHelloRepl",
+        "title": "Create a Getting Started REPL project",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.createMinimalProject",
+        "title": "Create a mini Clojure project",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.toggleCLJCSession",
+        "title": "Toggle the REPL Connection (clj or cljs) used for CLJC Files",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.clearInlineResults",
+        "title": "Clear Inline Evaluation Results",
+        "category": "Calva",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva.clearReplOutputView",
+        "title": "Clear REPL Output View",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.interruptAllEvaluations",
+        "title": "Interrupt Running Evaluations",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateSelection",
+        "title": "Evaluate Current Form  (or selection, if any)",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateEnclosingForm",
+        "title": "Evaluate Current Enclosing Form",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateToCursor",
+        "title": "Evaluate From Start of List to Cursor, Closing Brackets",
+        "enablement": "!editorHasSelection",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateSelectionToSelectionEnd",
+        "title": "Evaluate Selection, Closing Brackets",
+        "enablement": "editorHasSelection",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateTopLevelFormToCursor",
+        "title": "Evaluate From Start of Top Level Form to Cursor, Closing Brackets",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateStartOfFileToCursor",
+        "title": "Evaluate From Start of File to Cursor, Closing Brackets",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.tapSelection",
+        "title": "Tap Current Form (or selection, if any)",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateCurrentTopLevelForm",
+        "title": "Evaluate Top Level Form (defun)",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.tapCurrentTopLevelForm",
+        "title": "Tap Current Top Level Form",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateSelectionReplace",
+        "title": "Evaluate Current Form and Replace it with the Result",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateSelectionAsComment",
+        "title": "Evaluate Current Form to Comment",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.evaluateTopLevelFormAsComment",
+        "title": "Evaluate Top Level Form (defun) to Comment",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.printLastStacktrace",
+        "title": "Print last stacktrace to result output destination",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.copyLastResults",
+        "title": "Copy Last Evaluation Result to Clipboard",
+        "category": "Calva",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva.loadFile",
+        "title": "Load/Evaluate Current File and its Requires/Dependencies",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.requireREPLUtilities",
+        "title": "Require (refer) REPL utilities, like (doc) etcetera, into Current Namespace",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.runNamespaceTests",
+        "title": "Run Tests for Current Namespace",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.loadTestFileForCurrentNamespace",
+        "title": "Load/Evaluate Test File (as saved on disk) for Current Namespace",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.runAllTests",
+        "title": "Run All Tests",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.rerunTests",
+        "title": "Run Failing Tests Again",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.runTestUnderCursor",
+        "title": "Run Current Test",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "title": "Run Custom REPL Command",
+        "category": "Calva",
+        "enablement": "calva:connected"
+      },
+      {
+        "command": "calva.continueComment",
+        "title": "Continue Comment (add a commented line below).",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.switchCljsBuild",
+        "title": "Select CLJS Build Connection",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.refresh",
+        "title": "Refresh Changed Namespaces",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.refreshAll",
+        "title": "Refresh All Namespaces",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.toggleKeybindingsEnabled",
+        "title": "Toggle Keybindings Enabled"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.togglemode",
+        "title": "Toggle Paredit Mode",
+        "when": "editorLangId == clojure && paredit:keyMap =~ /original|strict/",
+        "enablement": "editorLangId == clojure && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forwardSexp",
+        "title": "Move Cursor Forward Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.backwardSexp",
+        "title": "Move Cursor Backward Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forwardSexpOrUp",
+        "title": "Move Cursor Forward or Up Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.backwardSexpOrUp",
+        "title": "Move Cursor Backward or Up Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forwardDownSexp",
+        "title": "Move Cursor Forward Down Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.backwardDownSexp",
+        "title": "Move Cursor Backward Down Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.backwardUpSexp",
+        "title": "Move Cursor Backward Up Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forwardUpSexp",
+        "title": "Move Cursor Forward Up Sexp/Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.closeList",
+        "title": "Move Cursor Forward to List End/Close",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "calva.selectCurrentForm",
+        "title": "Select Current Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectForwardSexp",
+        "title": "Select Forward Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectRight",
+        "title": "Select Right",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectBackwardSexp",
+        "title": "Select Backward Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectForwardDownSexp",
+        "title": "Select Forward Down Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectBackwardDownSexp",
+        "title": "Select Backward Down Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectBackwardUpSexp",
+        "title": "Select Backward Up Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectForwardUpSexp",
+        "title": "Select Forward Up Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectBackwardSexpOrUp",
+        "title": "Select Backward Or Up Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectForwardSexpOrUp",
+        "title": "Select Forward Or Up Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectCloseList",
+        "title": "Select Forward to List End/Close",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.selectOpenList",
+        "title": "Select Backward to List Start/Open",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rangeForDefun",
+        "title": "Select Current Top Level (aka defun) Form",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.sexpRangeExpansion",
+        "title": "Expand Selection",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.sexpRangeContraction",
+        "title": "Shrink Selection",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.slurpSexpForward",
+        "title": "Slurp Sexp Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.slurpSexpBackward",
+        "title": "Slurp Sexp Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.barfSexpForward",
+        "title": "Barf Sexp Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.barfSexpBackward",
+        "title": "Barf Sexp Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.spliceSexp",
+        "title": "Splice Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.splitSexp",
+        "title": "Split Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.joinSexp",
+        "title": "Join Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.raiseSexp",
+        "title": "Raise Sexp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.transpose",
+        "title": "Transpose (Swap) the two Sexps Around the Cursor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprBackward",
+        "title": "Drag Sexp Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprForward",
+        "title": "Drag Sexp Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprBackwardUp",
+        "title": "Drag Sexp Backward Up",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprForwardDown",
+        "title": "Drag Sexp Forward Down",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprForwardUp",
+        "title": "Drag Sexp Forward Up",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.dragSexprBackwardDown",
+        "title": "Drag Sexp Backward Down",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.convolute",
+        "title": "Convolute Sexp ¯\\_(ツ)_/¯",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killRight",
+        "title": "Kill/Delete Right",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killLeft",
+        "title": "Kill/Delete Left",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killSexpForward",
+        "title": "Kill/Delete Sexp Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killSexpBackward",
+        "title": "Kill/Delete Sexp Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killListForward",
+        "title": "Kill/Delete Forward to End of List",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.killListBackward",
+        "title": "Kill/Delete Backward to Start of List",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.spliceSexpKillForward",
+        "title": "Splice & Kill/Delete Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.spliceSexpKillBackward",
+        "title": "Splice & Kill/Delete Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.deleteForward",
+        "title": "Delete Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.deleteBackward",
+        "title": "Delete Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forceDeleteForward",
+        "title": "Force Delete Forward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.forceDeleteBackward",
+        "title": "Force Delete Backward",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.wrapAroundParens",
+        "title": "Wrap Around ()",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.wrapAroundSquare",
+        "title": "Wrap Around []",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.wrapAroundCurly",
+        "title": "Wrap Around {}",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.wrapAroundQuote",
+        "title": "Wrap Around \"\"",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rewrapParens",
+        "title": "Rewrap ()",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rewrapSquare",
+        "title": "Rewrap []",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rewrapCurly",
+        "title": "Rewrap {}",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rewrapSet",
+        "title": "Rewrap #{}",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva Paredit",
+        "command": "paredit.rewrapQuote",
+        "title": "Rewrap \"\"",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.formatCurrentForm",
+        "title": "Format Current Form",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.alignCurrentForm",
+        "title": "Format and Align Current Form (recursively, experimental)",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.trimCurrentFormWhiteSpace",
+        "title": "Format Current Form and trim space between forms",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.inferParens",
+        "title": "Infer Parens (from the indentation)",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.tabIndent",
+        "title": "Indent Line",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva-fmt.tabDedent",
+        "title": "Dedent Line",
+        "category": "Calva Format",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.openFiddleForSourceFile",
+        "title": "Open Fiddle File for Current File",
+        "enablement": "!calva:activeEditorIsFiddle"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.evaluateFiddleForSourceFile",
+        "title": "Evaluate Fiddle File for Current File",
+        "enablement": "!calva:activeEditorIsFiddle"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.openSourceFileForFiddle",
+        "title": "Open Source File for Current Fiddle File",
+        "enablement": "calva:activeEditorIsFiddle"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showOutputChannel",
+        "title": "Show/Open the Calva says Output Channel"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showOutputTerminal",
+        "title": "Show/Open the Calva Output Terminal"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showResultOutputDestination",
+        "title": "Show/Open the result output destination"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showReplOutputView",
+        "title": "Show/Open the REPL output view"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showReplWindow",
+        "title": "Show/Open REPL Window",
+        "enablement": "calva:connected"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.showFileForOutputWindowNS",
+        "title": "Show File for the Current REPL Window Namespace",
+        "enablement": "calva:connected"
+      },
+      {
+        "command": "calva.setOutputWindowNamespace",
+        "title": "Switch Namespace in REPL Window to Current Namespace",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.sendCurrentFormToOutputWindow",
+        "title": "Send Current Form to REPL Window",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.sendCurrentTopLevelFormToOutputWindow",
+        "title": "Send Current Top Level Form to REPL Window",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.showPreviousReplHistoryEntry",
+        "title": "Show Previous REPL History Entry",
+        "enablement": "calva:connected && calva:outputWindowActive && calva:replHistoryCommandsActive",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.showNextReplHistoryEntry",
+        "title": "Show Next REPL History Entry",
+        "enablement": "calva:connected && calva:outputWindowActive && calva:replHistoryCommandsActive",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.clearReplHistory",
+        "title": "Clear REPL History",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.printClojureDocsToOutputWindow",
+        "title": "Print clojuredocs.org examples to OutputWindow",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "calva.printClojureDocsToRichComment",
+        "title": "Print clojuredocs.org examples to Rich Comment",
+        "enablement": "calva:connected",
+        "category": "Calva"
+      },
+      {
+        "command": "clojureLsp.refactor.cleanNs",
+        "title": "Clean NS Form",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.addMissingLibspec",
+        "title": "Add Missing Require",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.dragBackward",
+        "title": "Drag Sexp Backward",
+        "category": "clojure-lsp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.dragForward",
+        "title": "Drag Sexp Forward",
+        "category": "clojure-lsp",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.cyclePrivacy",
+        "title": "Cycle/Toggle Privacy",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.expandLet",
+        "title": "Expand Let",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.inlineSymbol",
+        "title": "Inline Symbol",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.threadFirst",
+        "title": "Thread First",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.threadFirstAll",
+        "title": "Thread First All",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.threadLast",
+        "title": "Thread Last",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.threadLastAll",
+        "title": "Thread Last All",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.unwindAll",
+        "title": "Unwind All",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.unwindThread",
+        "title": "Unwind Thread",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.introduceLet",
+        "title": "Introduce let",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.moveToLet",
+        "title": "Move to Previous let Box",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "clojureLsp.refactor.extractFunction",
+        "title": "Extract to New Function",
+        "category": "clojure-lsp Refactor",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "command": "calva.diagnostics.clojureLspServerInfo",
+        "title": "Clojure-lsp Server Info",
+        "category": "Calva Diagnostics"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.toggleBetweenImplAndTest",
+        "title": "Toggle between implementation and test"
+      },
+      {
+        "category": "Calva",
+        "command": "paredit.addRichComment",
+        "title": "Add Rich Comment",
+        "enablement": "editorLangId == clojure"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.clearInspector",
+        "title": "Clear All Inspector Items",
+        "icon": "$(close-all)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.clearInspectorItem",
+        "title": "Clear Inspector Item",
+        "icon": "$(close)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.copyInspectorItem",
+        "title": "Copy Inspector Item",
+        "icon": "$(copy)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.inspectItem",
+        "title": "Inspect Item",
+        "icon": "$(inspect)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.pasteAsInspectorItem",
+        "title": "Paste as Inspector Item",
+        "shortTitle": "Paste",
+        "icon": "$(add)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.addToInspector",
+        "title": "Add Selection or Current Form to Inspector",
+        "icon": "$(inspect)"
+      },
+      {
+        "category": "Calva",
+        "command": "calva.revealInspector",
+        "title": "Reveal Inspector"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "calva.debug.instrument",
+        "key": "ctrl+alt+c i",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure"
+      },
+      {
+        "command": "calva.jackIn",
+        "key": "ctrl+alt+c ctrl+alt+j",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.connect",
+        "key": "ctrl+alt+c ctrl+alt+c",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.showReplMenu",
+        "key": "ctrl+alt+c ctrl+alt+r"
+      },
+      {
+        "command": "calva.connectNonProjectREPL",
+        "key": "ctrl+alt+c alt+c",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.toggleCLJCSession",
+        "key": "ctrl+alt+c ctrl+alt+s",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.switchCljsBuild",
+        "key": "ctrl+alt+c ctrl+alt+b",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.selectCurrentForm",
+        "key": "ctrl+alt+c ctrl+s",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.clearInlineResults",
+        "key": "escape",
+        "when": "calva:keybindingsEnabled && calva:hasInlineResults && editorTextFocus && !editorHasMultipleSelections && !editorHasSelection && !editorReadOnly && !hasOtherSuggestions && !parameterHintsVisible && !selectionAnchorSet && !suggestWidgetVisible && !inlineSuggestionVisible && editorLangId == clojure"
+      },
+      {
+        "command": "calva.evaluateSelection",
+        "key": "ctrl+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !suggestWidgetVisible"
+      },
+      {
+        "command": "calva.evaluateEnclosingForm",
+        "key": "ctrl+shift+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateToCursor",
+        "key": "ctrl+alt+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorHasSelection"
+      },
+      {
+        "command": "calva.evaluateSelectionToSelectionEnd",
+        "key": "ctrl+alt+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "calva.evaluateTopLevelFormToCursor",
+        "key": "shift+alt+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateStartOfFileToCursor",
+        "key": "ctrl+shift+alt+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.tapSelection",
+        "key": "ctrl+shift+t t",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.tapCurrentTopLevelForm",
+        "key": "ctrl+shift+t space",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.interruptAllEvaluations",
+        "key": "ctrl+alt+c ctrl+alt+d",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateCurrentTopLevelForm",
+        "key": "alt+enter",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateReplWindowForm",
+        "key": "enter",
+        "when": "calva:keybindingsEnabled && calva:outputWindowActive && calva:replWindowSubmitOnEnter && editorTextFocus && !suggestWidgetVisible"
+      },
+      {
+        "command": "calva.evaluateSelectionReplace",
+        "key": "ctrl+alt+c r",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateSelectionAsComment",
+        "key": "ctrl+alt+c c",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.evaluateTopLevelFormAsComment",
+        "key": "ctrl+alt+c ctrl+space",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.printLastStacktrace",
+        "key": "ctrl+alt+c ctrl+alt+p",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus"
+      },
+      {
+        "command": "calva.copyLastResults",
+        "key": "ctrl+alt+c ctrl+c",
+        "when": "calva:connected && calva:keybindingsEnabled && editorLangId == clojure"
+      },
+      {
+        "command": "calva.loadFile",
+        "key": "ctrl+alt+c enter",
+        "when": "editorLangId == clojure && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.togglePrettyPrint",
+        "key": "ctrl+alt+c p",
+        "when": "editorLangId == clojure && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.toggleEvaluationSendCodeToOutputWindow",
+        "key": "ctrl+alt+o s",
+        "when": "editorLangId == clojure && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.requireREPLUtilities",
+        "key": "ctrl+alt+c ctrl+u",
+        "when": "editorLangId == clojure && calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runNamespaceTests",
+        "key": "ctrl+alt+c t",
+        "when": "editorLangId == clojure && calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runAllTests",
+        "key": "ctrl+alt+c shift+t",
+        "when": "editorLangId == clojure && calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.rerunTests",
+        "key": "ctrl+alt+c ctrl+t",
+        "when": "editorLangId == clojure && calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runTestUnderCursor",
+        "key": "ctrl+alt+c ctrl+alt+t",
+        "when": "editorLangId == clojure && calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "paredit.togglemode",
+        "key": "ctrl+alt+p ctrl+alt+m",
+        "when": "editorLangId == clojure && calva:keybindingsEnabled && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.backwardSexp",
+        "mac": "ctrl+left",
+        "win": "alt+left",
+        "linux": "alt+left",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment || calva:cursorBeforeComment"
+      },
+      {
+        "command": "paredit.backwardSexp",
+        "mac": "alt+left",
+        "win": "ctrl+left",
+        "linux": "ctrl+left",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment || calva:cursorBeforeComment"
+      },
+      {
+        "command": "paredit.forwardSexp",
+        "mac": "ctrl+right",
+        "win": "alt+right",
+        "linux": "alt+right",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment || calva:cursorAfterComment"
+      },
+      {
+        "command": "paredit.forwardSexp",
+        "mac": "alt+right",
+        "win": "ctrl+right",
+        "linux": "ctrl+right",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment || calva:cursorAfterComment"
+      },
+      {
+        "command": "paredit.forwardDownSexp",
+        "key": "ctrl+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.backwardDownSexp",
+        "key": "ctrl+alt+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.forwardUpSexp",
+        "key": "ctrl+alt+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.backwardUpSexp",
+        "key": "ctrl+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.closeList",
+        "key": "ctrl+end",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.openList",
+        "key": "ctrl+home",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectForwardSexp",
+        "mac": "shift+alt+right",
+        "win": "shift+ctrl+right",
+        "linux": "shift+ctrl+right",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment && !calva:cursorAfterComment && !calva:cursorBeforeComment"
+      },
+      {
+        "command": "paredit.selectRight",
+        "mac": "ctrl+shift+k",
+        "win": "ctrl+k ctrl+shift+k",
+        "linux": "ctrl+k ctrl+shift+k",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !selectionAnchorSet && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectBackwardSexp",
+        "mac": "shift+alt+left",
+        "win": "shift+ctrl+left",
+        "linux": "shift+ctrl+left",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment && !calva:cursorAfterComment && !calva:cursorBeforeComment"
+      },
+      {
+        "command": "paredit.selectForwardDownSexp",
+        "key": "ctrl+shift+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectBackwardDownSexp",
+        "key": "ctrl+shift+alt+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectForwardUpSexp",
+        "key": "ctrl+shift+alt+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectBackwardUpSexp",
+        "key": "ctrl+shift+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectCloseList",
+        "key": "ctrl+shift+end",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.selectOpenList",
+        "key": "ctrl+shift+home",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rangeForDefun",
+        "key": "ctrl+alt+w space",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.sexpRangeExpansion",
+        "mac": "ctrl+w",
+        "win": "shift+alt+right",
+        "linux": "shift+alt+right",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.sexpRangeContraction",
+        "mac": "ctrl+shift+w",
+        "win": "shift+alt+left",
+        "linux": "shift+alt+left",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.slurpSexpForward",
+        "key": "ctrl+alt+right",
+        "linux": "ctrl+alt+.",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.slurpSexpBackward",
+        "key": "ctrl+alt+shift+left",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.barfSexpForward",
+        "key": "ctrl+alt+left",
+        "linux": "ctrl+alt+,",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.barfSexpBackward",
+        "key": "ctrl+alt+shift+right",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.spliceSexp",
+        "key": "ctrl+alt+s",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.splitSexp",
+        "key": "ctrl+shift+s",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.joinSexp",
+        "key": "ctrl+shift+j",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.raiseSexp",
+        "key": "ctrl+alt+p ctrl+alt+r",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.transpose",
+        "key": "ctrl+alt+t",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.dragSexprBackward",
+        "key": "ctrl+shift+alt+b",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.dragSexprForward",
+        "key": "ctrl+shift+alt+f",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.dragSexprBackward",
+        "key": "alt+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.dragSexprForward",
+        "key": "alt+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/ && config.calva.paredit.hijackVSCodeDefaults && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.dragSexprBackwardUp",
+        "key": "ctrl+shift+alt+u",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.dragSexprForwardDown",
+        "key": "ctrl+shift+alt+d",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.dragSexprForwardUp",
+        "key": "ctrl+shift+alt+k",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.dragSexprBackwardDown",
+        "key": "ctrl+shift+alt+j",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.convolute",
+        "key": "ctrl+shift+c",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killRight",
+        "mac": "ctrl+k",
+        "win": "ctrl+k ctrl+k",
+        "linux": "ctrl+k ctrl+k",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !selectionAnchorSet && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killLeft",
+        "mac": "cmd+backspace",
+        "win": "ctrl+k ctrl+h",
+        "linux": "ctrl+k ctrl+h",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !selectionAnchorSet && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killSexpForward",
+        "key": "ctrl+shift+delete",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killSexpBackward",
+        "key": "ctrl+alt+backspace",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killListForward",
+        "key": "ctrl+delete",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.killListBackward",
+        "key": "ctrl+backspace",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.spliceSexpKillForward",
+        "key": "ctrl+alt+shift+delete",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.spliceSexpKillBackward",
+        "key": "ctrl+alt+shift+backspace",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.wrapAroundParens",
+        "key": "ctrl+alt+shift+p",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.wrapAroundSquare",
+        "key": "ctrl+alt+shift+s",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.wrapAroundCurly",
+        "key": "ctrl+alt+shift+c",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.wrapAroundQuote",
+        "key": "ctrl+alt+shift+q",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rewrapParens",
+        "key": "ctrl+alt+r ctrl+alt+p",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rewrapSquare",
+        "key": "ctrl+alt+r ctrl+alt+s",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rewrapCurly",
+        "key": "ctrl+alt+r ctrl+alt+c",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rewrapSet",
+        "key": "ctrl+alt+r ctrl+alt+h",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.rewrapQuote",
+        "key": "ctrl+alt+r ctrl+alt+q",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap =~ /original|strict/"
+      },
+      {
+        "command": "paredit.deleteForward",
+        "key": "delete",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap == strict && !editorReadOnly && !editorHasMultipleSelections && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.deleteBackward",
+        "key": "backspace",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap == strict && !editorReadOnly && !editorHasMultipleSelections && !calva:cursorInComment"
+      },
+      {
+        "command": "paredit.forceDeleteForward",
+        "key": "alt+delete",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap == strict && !editorReadOnly && !editorHasMultipleSelections"
+      },
+      {
+        "command": "paredit.forceDeleteBackward",
+        "key": "alt+backspace",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && paredit:keyMap == strict && !editorReadOnly && !editorHasMultipleSelections"
+      },
+      {
+        "command": "calva-fmt.formatCurrentForm",
+        "key": "tab",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorReadOnly && !inSnippetMode && !suggestWidgetVisible && !hasOtherSuggestions && !inSnippetMode && !inlineSuggestionVisible"
+      },
+      {
+        "command": "calva-fmt.alignCurrentForm",
+        "key": "ctrl+alt+l",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorReadOnly && !suggestWidgetVisible && !hasOtherSuggestions"
+      },
+      {
+        "command": "calva-fmt.inferParens",
+        "key": "ctrl+alt+p i",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorReadOnly && !suggestWidgetVisible && !hasOtherSuggestions"
+      },
+      {
+        "command": "calva-fmt.tabIndent",
+        "key": "ctrl+i",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorReadOnly && !suggestWidgetVisible && !hasOtherSuggestions"
+      },
+      {
+        "command": "calva-fmt.tabDedent",
+        "key": "shift+tab",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && editorTextFocus && !editorReadOnly && !suggestWidgetVisible && !hasOtherSuggestions"
+      },
+      {
+        "command": "calva.openFiddleForSourceFile",
+        "key": "ctrl+alt+c f",
+        "when": "calva:keybindingsEnabled && !calva:activeEditorIsFiddle"
+      },
+      {
+        "command": "calva.evaluateFiddleForSourceFile",
+        "key": "ctrl+alt+c ctrl+alt+f",
+        "when": "calva:keybindingsEnabled && calva:connected && !calva:activeEditorIsFiddle"
+      },
+      {
+        "command": "calva.openSourceFileForFiddle",
+        "key": "ctrl+alt+c f",
+        "when": "calva:keybindingsEnabled && calva:activeEditorIsFiddle"
+      },
+      {
+        "command": "calva.showResultOutputDestination",
+        "key": "ctrl+alt+o o",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.showOutputChannel",
+        "key": "ctrl+alt+o c",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.showOutputTerminal",
+        "key": "ctrl+alt+o t",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.showReplWindow",
+        "key": "ctrl+alt+o r",
+        "args": false,
+        "when": "calva:keybindingsEnabled && !calva:outputWindowActive"
+      },
+      {
+        "command": "calva.showReplOutputView",
+        "key": "ctrl+alt+o v",
+        "args": false,
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.showFileForOutputWindowNS",
+        "key": "ctrl+alt+o r",
+        "args": false,
+        "when": "calva:keybindingsEnabled && calva:connected && calva:outputWindowActive"
+      },
+      {
+        "command": "calva.revealInspector",
+        "key": "ctrl+alt+o i",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.setOutputWindowNamespace",
+        "key": "ctrl+alt+c n",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected && !calva:outputWindowActive"
+      },
+      {
+        "command": "calva.sendCurrentFormToOutputWindow",
+        "key": "ctrl+alt+c ctrl+alt+e",
+        "win": "ctrl+alt+c ctrl+alt+v",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected && !calva:outputWindowActive"
+      },
+      {
+        "command": "calva.sendCurrentTopLevelFormToOutputWindow",
+        "key": "ctrl+alt+c ctrl+alt+space",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected && !calva:outputWindowActive"
+      },
+      {
+        "command": "calva.showPreviousReplHistoryEntry",
+        "key": "alt+up",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected && calva:outputWindowActive"
+      },
+      {
+        "command": "calva.showNextReplHistoryEntry",
+        "key": "alt+down",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected && calva:outputWindowActive"
+      },
+      {
+        "command": "calva.printClojureDocsToOutputWindow",
+        "key": "ctrl+alt+o d",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected"
+      },
+      {
+        "command": "calva.printClojureDocsToRichComment",
+        "key": "ctrl+alt+r d",
+        "when": "calva:keybindingsEnabled && editorLangId == clojure && calva:connected"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space enter",
+        "args": "enter",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space ,",
+        "args": ",",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space .",
+        "args": ".",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space -",
+        "args": "-",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space backspace",
+        "args": "backspace",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space left",
+        "args": "left",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space right",
+        "args": "right",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space up",
+        "args": "up",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space down",
+        "args": "down",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space tab",
+        "args": "tab",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 0",
+        "args": "0",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 1",
+        "args": "1",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 2",
+        "args": "2",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 3",
+        "args": "3",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 4",
+        "args": "4",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 5",
+        "args": "5",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 6",
+        "args": "6",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 7",
+        "args": "7",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 8",
+        "args": "8",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space 9",
+        "args": "9",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space a",
+        "args": "a",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space b",
+        "args": "b",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space c",
+        "args": "c",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space d",
+        "args": "d",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space e",
+        "args": "e",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space f",
+        "args": "f",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space g",
+        "args": "g",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space h",
+        "args": "h",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space i",
+        "args": "i",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space j",
+        "args": "j",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space k",
+        "args": "k",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space l",
+        "args": "l",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space m",
+        "args": "m",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space n",
+        "args": "n",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space o",
+        "args": "o",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space p",
+        "args": "p",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space q",
+        "args": "q",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space r",
+        "args": "r",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space s",
+        "args": "s",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space t",
+        "args": "t",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space u",
+        "args": "u",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space v",
+        "args": "v",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space w",
+        "args": "w",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space x",
+        "args": "x",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space y",
+        "args": "y",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space z",
+        "args": "z",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.runCustomREPLCommand",
+        "key": "ctrl+alt+space space",
+        "when": "calva:connected && calva:keybindingsEnabled"
+      },
+      {
+        "command": "calva.toggleBetweenImplAndTest",
+        "when": "calva:keybindingsEnabled"
+      },
+      {
+        "command": "paredit.addRichComment",
+        "key": "ctrl+alt+r c",
+        "when": "editorLangId == clojure && calva:keybindingsEnabled"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "calva.showReplMenu",
+          "when": "true"
+        },
+        {
+          "command": "calva.debug.instrument",
+          "when": "editorLangId == clojure"
+        },
+        {
+          "command": "calva.showPreviousReplHistoryEntry",
+          "when": "calva:connected && calva:outputWindowActive"
+        },
+        {
+          "command": "calva.showNextReplHistoryEntry",
+          "when": "calva:connected && calva:outputWindowActive"
+        },
+        {
+          "command": "calva.showReplWindow",
+          "when": "!calva:outputWindowActive"
+        },
+        {
+          "command": "calva.showFileForOutputWindowNS"
+        },
+        {
+          "command": "calva.toggleBetweenImplAndTest",
+          "when": "editorLangId == clojure"
+        }
+      ],
+      "editor/title": [
+        {
+          "enablement": "editorLangId == clojure  && calva:connected",
+          "command": "calva.loadFile",
+          "group": "calva/b-eval"
+        },
+        {
+          "enablement": "editorLangId == clojure && calva:connected",
+          "command": "calva.setOutputWindowNamespace",
+          "group": "calva/b-eval"
+        },
+        {
+          "enablement": "editorLangId == clojure && !calva:activeEditorIsFiddle",
+          "command": "calva.openFiddleForSourceFile",
+          "group": "calva/a-fiddle"
+        },
+        {
+          "enablement": "calva:connected && editorLangId == clojure && !calva:activeEditorIsFiddle",
+          "command": "calva.evaluateFiddleForSourceFile",
+          "group": "calva/a-fiddle"
+        },
+        {
+          "enablement": "editorLangId == clojure && calva:activeEditorIsFiddle",
+          "command": "calva.openSourceFileForFiddle",
+          "group": "calva/a-fiddle"
+        }
+      ],
+      "editor/context": [
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "!calva:connected",
+          "command": "calva.showReplMenu",
+          "group": "calva/x-connect"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.disconnect",
+          "group": "calva/x-connect"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "command": "calva.selectCurrentForm",
+          "group": "calva/a-structural-editing"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.loadFile",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.evaluateSelection",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.evaluateCurrentTopLevelForm",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.evaluateSelectionAsComment",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.evaluateTopLevelFormAsComment",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.interruptAllEvaluations",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "command": "calva.togglePrettyPrint",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "command": "calva.toggleEvaluationSendCodeToOutputWindow",
+          "group": "calva/b-eval"
+        },
+        {
+          "command": "calva.debug.instrument",
+          "enablement": "editorLangId == clojure && calva:connected",
+          "when": "editorLangId == clojure",
+          "group": "calva/b-eval"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.runAllTests",
+          "group": "calva/d-test"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.runNamespaceTests",
+          "group": "calva/d-test"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.rerunTests",
+          "group": "calva/d-test"
+        },
+        {
+          "when": "editorLangId == clojure",
+          "enablement": "calva:connected",
+          "command": "calva.runTestUnderCursor",
+          "group": "calva/d-test"
+        }
+      ],
+      "editor/context/copy": [
+        {
+          "command": "calva.copyHtmlAsHiccup",
+          "group": "0-calva"
+        }
+      ],
+      "menuBar/edit/copy": [
+        {
+          "command": "calva.copyHtmlAsHiccup",
+          "group": "0-calva"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "calva.pasteAsInspectorItem",
+          "when": "view == calva.inspector",
+          "group": "navigation@1"
+        },
+        {
+          "command": "calva.clearInspector",
+          "when": "view == calva.inspector",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "calva.copyInspectorItem",
+          "when": "view == calva.inspector",
+          "group": "inline@1"
+        },
+        {
+          "command": "calva.inspectItem",
+          "when": "view == calva.inspector && viewItem == raw",
+          "group": "inline@3"
+        },
+        {
+          "command": "calva.clearInspectorItem",
+          "when": "view == calva.inspector && viewItem =~ /inspectable|raw/",
+          "group": "inline@4"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "calva",
+          "title": "Calva",
+          "icon": "assets/images/calva-symbol-white.svg"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "projectTree",
+          "name": "Project tree",
+          "icon": "assets/images/clj.svg",
+          "contextualTitle": "Project tree"
+        }
+      ],
+      "calva": [
+        {
+          "id": "calva.inspector",
+          "name": "Inspector"
+        }
+      ]
+    },
+    "colors": [
+      {
+        "id": "calva.inlineForegroundColor",
+        "description": "Specifies the foreground color of the inline result",
+        "defaults": {
+          "dark": "#fafafaff",
+          "light": "#0c0c0cff",
+          "highContrast": "#ffffffff",
+          "highContrastLight": "#000000ff"
+        }
+      },
+      {
+        "id": "calva.inlineErrorForegroundColor",
+        "description": "Specifies the foreground color of the inline result with error",
+        "defaults": {
+          "dark": "#ffafaf",
+          "light": "#ff7f7f",
+          "highContrast": "#ff7f7f"
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "watch-docs": "mkdocs serve",
+    "clean": "rimraf ./out ./tsconfig.tsbuildinfo ./cljs-out ./repl-output-ui/js",
+    "update-grammar": "node ./src/calva-fmt/update-grammar.js ./src/calva-fmt/atom-language-clojure/grammars/clojure.cson clojure.tmLanguage.json",
+    "precompile": "npm i && npm run clean && npm run update-grammar",
+    "compile-cljs": "npx shadow-cljs -A:dev:test compile :calva-lib :test :repl-output-ui",
+    "compile-ts": "npx tsc --project ./tsconfig.json",
+    "compile": "npm run compile-cljs && npm run compile-ts",
+    "watch-ts": "npx tsc --watch --project ./tsconfig.json",
+    "watch-cljs": "clojure -Sdeps '{:deps {nrepl/nrepl {:mvn/version,\"1.3.1\"},cider/cider-nrepl {:mvn/version,\"0.55.4\"}}}' -M:dev:test -m nrepl.cmdline --middleware \"[cider.nrepl/cider-middleware shadow.cljs.devtools.server.nrepl/middleware]\"",
+    "watch-ts-with-strict-nulls": "npx tsc --watch --project ./tsconfig.json --strictNullChecks",
+    "release-cljs": "npx shadow-cljs release -A:test :calva-lib :test :repl-output-ui",
+    "release": "webpack --mode production",
+    "prerelease": "npm run precompile && npm run release-cljs",
+    "compile-test": "tsc -p ./",
+    "postrelease": "",
+    "package-vsix": "vsce package",
+    "package-vsix-prerelease": "vsce package",
+    "vscode:prepublish": "npm run release",
+    "bump-version": "npm set git-tag-version false && npm version patch",
+    "calva-lib-test": "node ./out/cljs-lib/test/cljs-lib-tests.js",
+    "integration-test": "node ./out/extension-test/integration/runTests.js",
+    "e2e-test": "node ./src/extension-test/e2e-test/launch.js",
+    "pree2e-test": "cd ./src/extension-test/e2e-test/ && npm i",
+    "unit-test": "npx mocha --require ts-node/register 'src/extension-test/unit/**/*-test.ts'",
+    "unit-test-watch": "npx mocha --watch --require ts-node/register --watch-extensions ts --watch-files src 'src/extension-test/unit/**/*-test.ts'",
+    "prettier-format": "npx prettier --write \"./**/*.{ts,js,json}\"",
+    "prettier-check": "npx prettier --check \"./**/*.{ts,js,json}\"",
+    "prettier-check-watch": "onchange \"./**/*.{ts,js,json}\" -- prettier --check {{changed}}",
+    "prettier-format-watch": "onchange \"./**/*.{ts,js,json}\" -- prettier --write {{changed}}",
+    "preprettier-format-watch": "npm run prettier-format",
+    "eslint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
+    "eslint-watch": "npx esw . --ext .js,.jsx,.ts,.tsx --watch",
+    "install-ys": "curl -sS https://yamlscript.org/install | PREFIX=/tmp/yamlscript VERSION=0.1.56 bash",
+    "publish": "bb scripts/publish.clj"
+  },
+  "dependencies": {
+    "@vscode/debugadapter": "^1.64.0",
+    "ansi-regex": "^5.0.1",
+    "axios": "^1.4.0",
+    "chalk": "^4.1.2",
+    "extract-zip": "^2.0.1",
+    "find": "0.2.9",
+    "follow-redirects": "^1.15.4",
+    "get-port": "^5.1.1",
+    "immutable": "3.8.1",
+    "immutable-cursor": "2.0.1",
+    "jszip": "3.8.0",
+    "lodash": "^4.17.19",
+    "lodash.isequal": "4.5.0",
+    "net": "1.0.2",
+    "open": "^6.3.0",
+    "parinfer": "^3.12.0",
+    "posthtml-parser": "^0.11.0",
+    "semver": "^7.3.7",
+    "strip-ansi": "^7.1.0",
+    "tree-kill": "^1.2.2",
+    "uuidv4": "6.2.12",
+    "vscode-languageclient": "^8.0.2",
+    "vsls": "^1.0.4753"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.6",
+    "@types/follow-redirects": "^1.13.0",
+    "@types/glob": "^7.1.1",
+    "@types/lodash": "^4.14.167",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^18.6.3",
+    "@types/screenshot-desktop": "^1.12.3",
+    "@types/semver": "^7.3.9",
+    "@types/uuid": "^8.3.4",
+    "@types/vscode": "^1.67.0",
+    "@typescript-eslint/eslint-plugin": "^5.17.0",
+    "@typescript-eslint/parser": "^5.17.0",
+    "@vscode/test-electron": "^2.3.8",
+    "@vscode/vsce": "^2.15.0",
+    "chai": "^4.2.0",
+    "cson-parser": "^4.0.3",
+    "eslint": "^8.8.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-watch": "^8.0.0",
+    "fast-check": "^1.22.2",
+    "glob": "^7.1.6",
+    "jest": "^27.2.5",
+    "json": "^10.0.0",
+    "mocha": "^11.1.0",
+    "mocha-junit-reporter": "^2.0.2",
+    "mocha-multi-reporters": "^1.5.1",
+    "node-gyp": "^8.4.1",
+    "onchange": "^7.1.0",
+    "ovsx": "^0.8.3",
+    "prettier": "2.5.1",
+    "rimraf": "^2.7.1",
+    "screenshot-desktop": "^1.15.0",
+    "shadow-cljs": "^2.28.15",
+    "source-map-support": "^0.5.16",
+    "ts-loader": "^8.0.18",
+    "ts-node": "^10.3.0",
+    "ts-sinon": "^2.0.2",
+    "typescript": "^4.6.3",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.0"
+  }
+}
