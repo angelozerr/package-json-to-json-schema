@@ -1,0 +1,369 @@
+{
+  "name": "vscode-apache-camel",
+  "displayName": "Language Support for Apache Camel by Red Hat",
+  "description": "Provides completion, validation and documentation features for Apache Camel URI elements.",
+  "license": "Apache-2.0",
+  "version": "1.12.0",
+  "preview": false,
+  "publisher": "redhat",
+  "icon": "icons/icon128.png",
+  "maintainers": [
+    {
+      "name": "Aurélien Pupier",
+      "email": "aurelien.pupier@gmail.com"
+    },
+    {
+      "name": "Lars Heinemann",
+      "email": "lhein.smx@gmail.com"
+    }
+  ],
+  "author": {
+    "name": "Red Hat"
+  },
+  "bugs": {
+    "url": "https://github.com/camel-tooling/camel-lsp-client-vscode/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/camel-tooling/camel-lsp-client-vscode.git"
+  },
+  "homepage": "https://github.com/camel-tooling/camel-lsp-client-vscode",
+  "keywords": [
+    "Camel",
+    "LSP",
+    "Language Server Protocol",
+    "Tool",
+    "Camel YAML"
+  ],
+  "engines": {
+    "vscode": "^1.82.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onLanguage:xml",
+    "workspaceContains:**/*.xml",
+    "onLanguage:java",
+    "workspaceContains:**/*.java",
+    "onLanguage:properties",
+    "onLanguage:spring-boot-properties",
+    "onLanguage:quarkus-properties",
+    "workspaceContains:**/*.properties",
+    "onLanguage:yaml",
+    "workspaceContains:**/*.yaml",
+    "workspaceContains:**/*.yml",
+    "onLanguage:json",
+    "workspaceContains:**/tasks.json"
+  ],
+  "main": "./out/src/extension.js",
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Language Support for Apache Camel",
+      "properties": {
+        "camel.Camel catalog version": {
+          "type": "string",
+          "markdownDescription": "The Camel catalog version used for providing Language Support for Apache Camel.\n\nYou can check available Camel catalogs at the following links: [the Maven Central repository](https://repo1.maven.org/maven2/org/apache/camel/camel-catalog/) and [the Maven Red Hat GA repository](https://maven.repository.redhat.com/ga/org/apache/camel/camel-catalog/).\n\ne.g. `3.20.5` or `3.20.1.redhat-00026`\n\n**Note:** Depending on the connection speed, it can take several minutes to have it applied."
+        },
+        "camel.Camel catalog runtime provider": {
+          "type": "string",
+          "description": "The Camel catalog runtime provider used for providing Language support for Apache Camel.",
+          "enum": [
+            "DEFAULT",
+            "SPRINGBOOT",
+            "QUARKUS"
+          ]
+        },
+        "camel.extra-components": {
+          "type": "array",
+          "description": "(Experimental)List of additional components to include in the Camel Catalog described with a Json list respecting Camel catalog syntax."
+        },
+        "camel.Kafka Connection URL": {
+          "type": "string",
+          "description": "Kafka Connection URl used by the Camel language Server to provide dynamic completion.",
+          "default": "localhost:9092"
+        },
+        "redhat.telemetry.enabled": {
+          "type": "boolean",
+          "default": null,
+          "markdownDescription": "Enable usage data and errors to be sent to Red Hat servers. Read our [privacy statement](https://developers.redhat.com/article/tool-data-collection).",
+          "scope": "window",
+          "tags": [
+            "telemetry"
+          ]
+        },
+        "camel.languageSupport.JBangVersion": {
+          "type": "string",
+          "markdownDescription": "Apache Camel JBang version used for internal VS Code JBang commands execution. Camel JBang requirements can differ between versions, it is recommended to use `default` version to ensure all extension features work properly.\n\n**Note**: This change will affect only commands provided by Language Support for Apache Camel extension.",
+          "default": "4.11.0"
+        },
+        "camel.ls.java.home": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "Specifies the folder path to the JDK (17 or more recent) used to launch the Camel Language Server.\n\nOn Windows, backslashes must be escaped, i.e.\n\"camel.ls.java.home\":\"C:\\\\Program Files\\\\Java\\\\jdk17.0_3\"",
+          "scope": "machine-overridable"
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "xml",
+        "extensions": [
+          ".xml"
+        ]
+      },
+      {
+        "id": "java",
+        "extensions": [
+          ".java"
+        ]
+      },
+      {
+        "id": "properties",
+        "extensions": [
+          ".properties"
+        ]
+      },
+      {
+        "id": "spring-boot-properties",
+        "extensions": [
+          "application.properties"
+        ]
+      },
+      {
+        "id": "yaml",
+        "extensions": [
+          ".yaml",
+          ".yml"
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "camel.new.file",
+        "title": "New Camel File",
+        "category": "Camel",
+        "enablement": "resource != undefined"
+      },
+      {
+        "command": "camel.jbang.routes.yaml",
+        "title": "Create a Camel Route using YAML DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.routes.java",
+        "title": "Create a Camel Route using Java DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.routes.xml",
+        "title": "Create a Camel Route using XML DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.project.new",
+        "title": "Create a Camel project",
+        "category": "Camel",
+        "enablement": "false"
+      },
+      {
+        "command": "camel.jbang.project.quarkus.new",
+        "title": "Create a Camel Quarkus project",
+        "category": "Camel"
+      },
+      {
+        "command": "camel.jbang.project.springboot.new",
+        "title": "Create a Camel on SpringBoot project",
+        "category": "Camel"
+      },
+      {
+        "command": "camel.jbang.routes.yaml.fromopenapi",
+        "title": "Create a Camel route from OpenAPI using YAML DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.routes.kamelet.yaml",
+        "title": "Create a Kamelet using YAML DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.routes.pipe.yaml",
+        "title": "Create a Custom Resource Pipe using YAML DSL",
+        "category": "Camel",
+        "enablement": "workspaceFolderCount != 0"
+      },
+      {
+        "command": "camel.jbang.transform.route.yaml",
+        "title": "Transform a Camel Route to YAML DSL",
+        "category": "Camel",
+        "enablement": "resourceFilename =~ /\\.(java|xml|yaml)$/"
+      },
+      {
+        "command": "camel.jbang.transform.route.xml",
+        "title": "Transform a Camel Route to XML DSL",
+        "category": "Camel",
+        "enablement": "resourceFilename =~ /\\.(java|xml|yaml)$/"
+      },
+      {
+        "command": "camel.jbang.transform.routes.in.folder.yaml",
+        "title": "Transform any Camel Route in a specified folder to YAML DSL",
+        "category": "Camel"
+      },
+      {
+        "command": "camel.jbang.transform.routes.in.files.yaml",
+        "title": "Transform Camel Routes in multiple files to YAML DSL",
+        "category": "Camel"
+      },
+      {
+        "command": "camel.jbang.transform.routes.in.folder.xml",
+        "title": "Transform any Camel Route in a specified folder to XML DSL",
+        "category": "Camel"
+      },
+      {
+        "command": "camel.jbang.transform.routes.in.files.xml",
+        "title": "Transform Camel Routes in multiple files to XML DSL",
+        "category": "Camel"
+      }
+    ],
+    "menus": {
+      "file/newFile": [
+        {
+          "command": "camel.new.file",
+          "group": "Camel",
+          "when": "workspaceFolderCount != 0"
+        }
+      ],
+      "explorer/context": [
+        {
+          "submenu": "camel.new.file",
+          "group": "1_camel",
+          "when": "workspaceFolderCount != 0"
+        }
+      ],
+      "camel.new.file": [
+        {
+          "command": "camel.jbang.routes.yaml",
+          "group": "1_camel@1",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.routes.java",
+          "group": "1_camel@2",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.routes.xml",
+          "group": "1_camel@3",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.routes.kamelet.yaml",
+          "group": "1_camel@3",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.routes.pipe.yaml",
+          "group": "1_camel@4",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.routes.yaml.fromopenapi",
+          "group": "1_camel@5",
+          "when": "workspaceFolderCount != 0"
+        },
+        {
+          "command": "camel.jbang.transform.route.yaml",
+          "group": "1_camel@6",
+          "when": "workspaceFolderCount != 0 && !explorerResourceIsFolder"
+        },
+        {
+          "command": "camel.jbang.transform.route.xml",
+          "group": "1_camel@7",
+          "when": "workspaceFolderCount != 0 && !explorerResourceIsFolder"
+        },
+        {
+          "command": "camel.jbang.transform.routes.in.folder.yaml",
+          "group": "1_camel@8",
+          "when": "workspaceFolderCount != 0 && explorerResourceIsFolder"
+        },
+        {
+          "command": "camel.jbang.transform.routes.in.folder.xml",
+          "group": "1_camel@9",
+          "when": "workspaceFolderCount != 0 && explorerResourceIsFolder"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "camel.new.file",
+        "label": "New Camel File"
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "workbench.explorer.emptyView",
+        "contents": "Create a new Camel project using the button below.\n[Create a Camel project](command:camel.jbang.project.new)\nLearn more about Language Support for Apache Camel by Red Hat by reading the [documentation](https://camel-tooling.github.io/camel-lsp-client-vscode/)"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./ && npm run lint",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./scripts/postinstall.js",
+    "test": "node ./out/src/test/runTest.js",
+    "lint": "eslint src",
+    "preui-test": "npm run compile",
+    "ui-test": "node ./out/src/ui-test/uitest_runner.js",
+    "ui-coverage": "npm run ui-test -- coverage"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^4.4.1",
+    "@types/chai": "^4.3.20",
+    "@types/fs-extra": "^11.0.4",
+    "@types/glob": "^8.0.1",
+    "@types/lodash": "^4.17.16",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.0.0",
+    "@types/sinon": "^17.0.3",
+    "@types/vscode": "^1.82.0",
+    "@types/winreg": "^1.2.36",
+    "@typescript-eslint/eslint-plugin": "^8.33.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "@vscode/test-electron": "^2.3.9",
+    "@vscode/vsce": "^3.5.0",
+    "async-wait-until": "^2.0.27",
+    "chai": "^4.5.0",
+    "eslint": "^9.28.0",
+    "eslint-define-config": "^2.1.0",
+    "eslint-plugin-import": "^2.31.0",
+    "glob": "^11.0.2",
+    "mocha": "^10.8.2",
+    "mocha-jenkins-reporter": "^0.4.8",
+    "mvn-artifact-download": "^6.1.1",
+    "rimraf": "^6.0.1",
+    "sinon": "^20.0.0",
+    "typescript": "^5.6.3",
+    "vscode-extension-tester": "^8.14.1"
+  },
+  "dependencies": {
+    "@redhat-developer/vscode-redhat-telemetry": "^0.9.1",
+    "expand-home-dir": "^0.0.3",
+    "fs-extra": "^11.3.0",
+    "lodash": "^4.17.21",
+    "valid-filename": "^3.1.0",
+    "vscode-languageclient": "^9.0.1",
+    "winreg-utf8": "^0.1.1"
+  }
+}
